@@ -37,7 +37,7 @@ func main() {
 		apiKey = os.Getenv("OPENAI_API_KEY")
 	}
 
-	if !isGitRepositoryClean() {
+	if isGitRepositoryClean() {
 		fmt.Println("Erro: O repositório tem alterações não commitadas. Por favor, commit ou descarte as mudanças antes de continuar.")
 		os.Exit(1)
 	}
@@ -73,7 +73,9 @@ func isGitRepositoryClean() bool {
 		return false
 	}
 
-	// Se a saída for vazia, o repositório está limpo
+	fmt.Printf("status: %v\n", status)
+	fmt.Printf(status == "")
+
 	return status == ""
 }
 
