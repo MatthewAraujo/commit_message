@@ -120,17 +120,22 @@ func generateCommitMessage(client *openai.Client, diff, branch, task string) (st
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf("chatCompletion.Choices[0].Message.Content: %v\n", chatCompletion.Choices[0].Message.Content)
 	return extractCommitMessage(chatCompletion.Choices[0].Message.Content), nil
 }
 
 func normalizeMessage(line string) string {
 	line = strings.TrimSpace(line)
+
 	line = strings.TrimLeft(line, "0123456789.*- ")
+
 	line = strings.Trim(line, "`\"'")
-	line = strings.ReplaceAll(line, "/\\n/g", "")
+
+	line = strings.ReplaceAll(line, "\\n", "")
+
 	line = strings.ReplaceAll(line, ": `", ":")
 	line = strings.ReplaceAll(line, "`:", ":")
+
+	line = strings.ReplaceAll(line, ". ", ".\n")
 
 	return line
 }
@@ -153,13 +158,11 @@ func extractCommitMessage(response string) string {
 	return commitMessage
 }
 
-// Função para realizar o commit no git
 func commitChanges(commitMessage string) error {
 	_, err := shellCommand("git", "commit", "-m", commitMessage)
 	return err
 }
 
-// Função para criar a mensagem do usuário para a OpenAI
 func createUserMessage(diff, branch, task string) string {
 	return fmt.Sprintf(`
 Você é um assistente especializado em escrever mensagens de commit perfeitas. Siga estas diretrizes:
