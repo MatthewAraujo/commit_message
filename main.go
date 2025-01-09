@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 
 	"github.com/MatthewAraujo/commit_message/config"
@@ -95,7 +94,7 @@ func getGitBranch() (string, error) {
 }
 
 func getGitDiff() (string, error) {
-	return shellCommand("git", "diff")
+	return shellCommand("git", "diff", "--cached")
 }
 
 func shellCommand(command ...string) (string, error) {
@@ -121,22 +120,37 @@ func generateCommitMessage(client *openai.Client, diff, branch, task string) (st
 	if err != nil {
 		return "", err
 	}
-
+	fmt.Printf("chatCompletion.Choices[0].Message.Content: %v\n", chatCompletion.Choices[0].Message.Content)
 	return extractCommitMessage(chatCompletion.Choices[0].Message.Content), nil
 }
 
-func extractCommitMessage(response string) string {
-	re := regexp.MustCompile(`(?m)^:.*?: .*?:.*?$`)
-	match := re.FindString(response)
+func normalizeMessage(line string) string {
+	line = strings.TrimSpace(line)
+	line = strings.TrimLeft(line, "0123456789.*- ")
+	line = strings.Trim(line, "`\"'")
+	line = strings.ReplaceAll(line, "\\n", "")
+	line = strings.ReplaceAll(line, ": `", ":")
+	line = strings.ReplaceAll(line, "`:", ":")
 
-	if match != "" {
-		body := regexp.MustCompile(`(?m)^\s*-.*?$`).FindAllString(response, -1)
-		if len(body) > 0 {
-			match += "\n\n" + fmt.Sprintf("%s", body)
+	return line
+}
+
+func extractCommitMessage(response string) string {
+	lines := strings.Split(response, "\n")
+	var commitMessage string
+
+	for _, line := range lines {
+		normalizedLine := normalizeMessage(line)
+
+		if normalizedLine != "" {
+			if commitMessage != "" {
+				commitMessage += "\n"
+			}
+			commitMessage += normalizedLine
 		}
 	}
 
-	return match
+	return commitMessage
 }
 
 // Função para realizar o commit no git
