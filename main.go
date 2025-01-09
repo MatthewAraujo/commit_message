@@ -135,6 +135,8 @@ func normalizeMessage(line string) string {
 	line = strings.ReplaceAll(line, ": `", ":")
 	line = strings.ReplaceAll(line, "`:", ":")
 
+	line = strings.ReplaceAll(line, "*", "")
+
 	line = strings.ReplaceAll(line, ". ", ".\n")
 
 	return line
