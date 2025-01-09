@@ -128,7 +128,7 @@ func normalizeMessage(line string) string {
 	line = strings.TrimSpace(line)
 	line = strings.TrimLeft(line, "0123456789.*- ")
 	line = strings.Trim(line, "`\"'")
-	line = strings.ReplaceAll(line, "\\n", "")
+	line = strings.ReplaceAll(line, "/\\n/g", "")
 	line = strings.ReplaceAll(line, ": `", ":")
 	line = strings.ReplaceAll(line, "`:", ":")
 
