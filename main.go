@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strings"
 
 	"github.com/MatthewAraujo/commit_message/config"
 	"github.com/MatthewAraujo/commit_message/prompt"
@@ -57,6 +58,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("Erro ao gerar mensagem de commit: %v", err)
 	}
+	// Exibe a mensagem de commit gerada
+	fmt.Println("Aqui está a mensagem de commit gerada:")
+	fmt.Println(commitMessage)
+
+	// Pergunta ao usuário se ele quer continuar com o commit
+	var response string
+	fmt.Print("Você deseja continuar com esse commit? (s/n): ")
+	fmt.Scanln(&response)
+
+	if strings.ToLower(response) != "s" {
+		fmt.Println("Commit cancelado.")
+		return
+	}
 
 	err = commitChanges(commitMessage)
 	if err != nil {
@@ -72,9 +86,6 @@ func isGitRepositoryClean() bool {
 		log.Printf("Erro ao verificar o status do git: %v", err)
 		return false
 	}
-
-	fmt.Printf("status: %v\n", status)
-	fmt.Printf(status == "")
 
 	return status == ""
 }
@@ -128,11 +139,13 @@ func extractCommitMessage(response string) string {
 	return match
 }
 
+// Função para realizar o commit no git
 func commitChanges(commitMessage string) error {
 	_, err := shellCommand("git", "commit", "-m", commitMessage)
 	return err
 }
 
+// Função para criar a mensagem do usuário para a OpenAI
 func createUserMessage(diff, branch, task string) string {
 	return fmt.Sprintf(`
 Você é um assistente especializado em escrever mensagens de commit perfeitas. Siga estas diretrizes:

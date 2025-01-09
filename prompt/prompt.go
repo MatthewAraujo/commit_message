@@ -67,20 +67,20 @@ Commit Complements 💻
 
 💻 Examples
 Git Command Result on GitHub
-git commit -m ":tada: Initial commit" 🎉 Initial commit
-git commit -m ":books: docs: Update README" 📚 docs: Update README
-git commit -m ":bug: fix: Infinite loop on line 50" 🐛 fix: Infinite loop on line 50
-git commit -m ":sparkles: feat: Login page" ✨ feat: Login page
-git commit -m ":bricks: ci: Dockerfile modification" 🧱 ci: Dockerfile modification
-git commit -m ":recycle: refactor: Refactor to arrow functions" ♻️ refactor: Refactor to arrow functions
-git commit -m ":zap: perf: Improved response time" ⚡ perf: Improved response time
-git commit -m ":boom: fix: Revert inefficient changes" 💥 fix: Revert inefficient changes
-git commit -m ":lipstick: feat: CSS styling for form" 💄 feat: CSS styling for form
-git commit -m ":test_tube: test: Create new test" 🧪 test: Create new test
-git commit -m ":bulb: docs: Comments on LoremIpsum( ) function" 💡 docs: Comments on LoremIpsum( ) function
-git commit -m ":card_file_box: raw: RAW data for year YYYY" 🗃️ raw: RAW data for year YYYY
-git commit -m ":broom: cleanup: Remove commented code and unused variables in form validation function" 🧹 cleanup: Remove commented code and unused variables in form validation function
-git commit -m ":wastebasket: remove: Remove unused project files for better organization and maintenance" 🗑️ remove: Remove unused project files for better organization and maintenance
+git commit -m "Initial commit" 🎉 Initial commit
+git commit -m "docs: Update README" 📚 docs: Update README
+git commit -m "fix: Infinite loop on line 50" 🐛 fix: Infinite loop on line 50
+git commit -m "feat: Login page" ✨ feat: Login page
+git commit -m "ci: Dockerfile modification" 🧱 ci: Dockerfile modification
+git commit -m "refactor: Refactor to arrow functions" ♻️ refactor: Refactor to arrow functions
+git commit -m "perf: Improved response time" ⚡ perf: Improved response time
+git commit -m "fix: Revert inefficient changes" 💥 fix: Revert inefficient changes
+git commit -m "feat: CSS styling for form" 💄 feat: CSS styling for form
+git commit -m "test: Create new test" 🧪 test: Create new test
+git commit -m "docs: Comments on LoremIpsum( ) function" 💡 docs: Comments on LoremIpsum( ) function
+git commit -m "raw: RAW data for year YYYY" 🗃️ raw: RAW data for year YYYY
+git commit -m "cleanup: Remove commented code and unused variables in form validation function" 🧹 cleanup: Remove commented code and unused variables in form validation function
+git commit -m "remove: Remove unused project files for better organization and maintenance" 🗑️ remove: Remove unused project files for better organization and maintenance
 `
 
 func GetPrompt() string {
