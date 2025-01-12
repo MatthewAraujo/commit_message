@@ -175,16 +175,17 @@ func setupAPIKey(args []string) error {
 }
 
 func main() {
-	taskFlag := flag.String("task", "", "Task description for the commit")
-	setAPIKeyFlag := flag.Bool("set_api_key", false, "Set the OpenAI API key")
+	taskFlag := flag.String("task", "", "Task description for the commit (optional)")
+	setAPIKeyFlag := flag.Bool("set_api_key", false, "Set the OpenAI API key (use only once to configure)")
 	flag.Parse()
 
 	if *setAPIKeyFlag {
+		fmt.Println("Setting up the OpenAI API key...")
 		if err := setupAPIKey(os.Args); err != nil {
 			fmt.Println("Error: ", err)
 			os.Exit(1)
 		}
-		fmt.Println("API key setup complete.")
+		fmt.Println("✔ API key setup complete. You can now run the commit process.")
 		return
 	}
 
@@ -192,36 +193,42 @@ func main() {
 	checkError(err, "Error retrieving the API key")
 
 	if isGitRepositoryClean() {
-		fmt.Println("Error: The repository has uncommitted changes. Please commit or discard the changes before continuing.")
+		fmt.Println("\n⚠️ Error: The repository has uncommitted changes.")
+		fmt.Println("Please commit or discard the changes before continuing.")
 		os.Exit(1)
 	}
 
+	fmt.Println("\n🔍 Retrieving current Git branch and changes...")
 	branch, err := getGitBranch()
 	checkError(err, "Error getting Git branch")
 
 	diff, err := getGitDiff()
 	checkError(err, "Error getting Git diff")
 
+	fmt.Println("\n🧠 Generating commit message based on the changes...")
 	openAIClient := openai.NewClient(option.WithAPIKey(apiKey))
 	commitMessage, err := generateCommitMessage(openAIClient, diff, branch, *taskFlag)
 	checkError(err, "Error generating commit message")
 
-	fmt.Println("Here is the generated commit message:")
+	fmt.Println("\n💬 Here is the generated commit message:")
+	fmt.Println("----------------------------------------------------")
 	fmt.Println(commitMessage)
+	fmt.Println("----------------------------------------------------")
 
 	var response string
-	fmt.Print("Do you want to proceed with this commit? (y/n): ")
+	fmt.Print("\nDo you want to proceed with this commit? (y/n): ")
 	fmt.Scanln(&response)
 
 	if strings.ToLower(response) != "y" {
-		fmt.Println("Commit canceled.")
+		fmt.Println("\n❌ Commit canceled. No changes were made.")
 		return
 	}
 
+	fmt.Println("\n✅ Committing changes to Git...")
 	if err := commitChanges(commitMessage); err != nil {
 		fmt.Printf("Error committing changes: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Println("Commit successfully completed!")
+	fmt.Println("\n🎉 Commit successfully completed!")
 }
