@@ -64,10 +64,6 @@ Integrated OpenAI API to automate commit message generation. Key changes:
 - Added   openai   and   prompt   libraries.
 - Created   createUserMessage   for prompt generation.
 - Updated task handling for accuracy.
-
-Reviewed-by: John Doe  
-Refs: #123
-
 ---
 
 ### Input Format:

@@ -16,19 +16,19 @@ import (
 )
 
 func main() {
-	taskFlag := flag.String("task", "", "Descrição da tarefa para o commit")
-	apiKeyFlag := flag.String("apikey", "", "API Key para OpenAI (pode ser configurado via variável de ambiente)")
+	taskFlag := flag.String("task", "", "Task description for the commit")
+	apiKeyFlag := flag.String("apikey", "", "API Key for OpenAI (can be configured via environment variable)")
 
 	flag.Parse()
 
 	if *taskFlag == "" {
-		fmt.Println("Erro: A flag -task é obrigatória.")
+		fmt.Println("Error: The -task flag is required.")
 		flag.Usage()
 		os.Exit(1)
 	}
 
 	if *apiKeyFlag == "" && config.Envs.OpenAi.API_KEY == "" {
-		fmt.Println("Erro: A chave da API OpenAI não foi fornecida. Use a flag -apikey ou defina a variável de ambiente.")
+		fmt.Println("Error: The OpenAI API key was not provided. Use the -apikey flag or set the environment variable.")
 		os.Exit(1)
 	}
 
@@ -38,50 +38,50 @@ func main() {
 	}
 
 	if isGitRepositoryClean() {
-		fmt.Println("Erro: O repositório tem alterações não commitadas. Por favor, commit ou descarte as mudanças antes de continuar.")
+		fmt.Println("Error: The repository has uncommitted changes. Please commit or discard the changes before continuing.")
 		os.Exit(1)
 	}
 
 	branch, err := getGitBranch()
 	if err != nil {
-		log.Fatalf("Erro ao obter branch do git: %v", err)
+		log.Fatalf("Error getting the Git branch: %v", err)
 	}
 
 	diff, err := getGitDiff()
 	if err != nil {
-		log.Fatalf("Erro ao obter diferenças do git: %v", err)
+		log.Fatalf("Error getting the Git diff: %v", err)
 	}
 
 	openAIClient := openai.NewClient(option.WithAPIKey(apiKey))
 	commitMessage, err := generateCommitMessage(openAIClient, diff, branch, *taskFlag)
 	if err != nil {
-		log.Fatalf("Erro ao gerar mensagem de commit: %v", err)
+		log.Fatalf("Error generating commit message: %v", err)
 	}
 
-	fmt.Println("Aqui está a mensagem de commit gerada:")
+	fmt.Println("Here is the generated commit message:")
 	fmt.Println(commitMessage)
 
 	var response string
-	fmt.Print("Você deseja continuar com esse commit? (s/n): ")
+	fmt.Print("Do you want to proceed with this commit? (y/n): ")
 	fmt.Scanln(&response)
 
-	if strings.ToLower(response) != "s" {
-		fmt.Println("Commit cancelado.")
+	if strings.ToLower(response) != "y" {
+		fmt.Println("Commit canceled.")
 		return
 	}
 
 	err = commitChanges(commitMessage)
 	if err != nil {
-		log.Fatalf("Erro ao realizar o commit: %v", err)
+		log.Fatalf("Error committing changes: %v", err)
 	}
 
-	fmt.Println("Commit realizado com sucesso!")
+	fmt.Println("Commit successfully completed!")
 }
 
 func isGitRepositoryClean() bool {
 	status, err := shellCommand("git", "status", "--porcelain")
 	if err != nil {
-		log.Printf("Erro ao verificar o status do git: %v", err)
+		log.Printf("Error checking Git status: %v", err)
 		return false
 	}
 
@@ -89,7 +89,7 @@ func isGitRepositoryClean() bool {
 }
 
 func getGitBranch() (string, error) {
-	return shellCommand("git", "rev-parse", "--abbrev-ref", "HEAD")
+	return shellCommand("git", "branch")
 }
 
 func getGitDiff() (string, error) {
@@ -100,7 +100,7 @@ func shellCommand(command ...string) (string, error) {
 	cmd := exec.Command(command[0], command[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("comando falhou: %v\n%s", err, output)
+		return "", fmt.Errorf("command failed: %v\n%s", err, output)
 	}
 	return string(output), nil
 }
@@ -143,20 +143,28 @@ func normalizeMessage(line string) string {
 
 func extractCommitMessage(response string) string {
 	lines := strings.Split(response, "\n")
-	var commitMessage string
+	var commitMessage strings.Builder
+
+	ignoredFirstShortLine := false
 
 	for _, line := range lines {
 		normalizedLine := normalizeMessage(line)
 
 		if normalizedLine != "" {
-			if commitMessage != "" {
-				commitMessage += "\n"
+			if len(normalizedLine) < 20 && !ignoredFirstShortLine {
+				ignoredFirstShortLine = true
+				continue
 			}
-			commitMessage += normalizedLine
+
+			if commitMessage.Len() > 0 {
+				commitMessage.WriteString("\n - ")
+			}
+
+			commitMessage.WriteString(normalizedLine)
 		}
 	}
 
-	return commitMessage
+	return commitMessage.String()
 }
 
 func commitChanges(commitMessage string) error {
