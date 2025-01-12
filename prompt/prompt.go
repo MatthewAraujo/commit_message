@@ -1,21 +1,5 @@
 package prompt
 
-const response = `
-:sparkles: feat: Integra OpenAI para geração de commits
-
-Integradas bibliotecas para utilizar o OpenAI e gerar automaticamente
-mensagens de commit. Alterações incluem:
-
-- Inclusão dos pacotes openai e prompt.
-- Função 'createUserMessage' para formatação do prompt.
-- Uso do cliente OpenAI para gerar mensagens.
-- Ajuste de variáveis 'task' e implementação do contexto.
-`
-
-func GetResponse() string {
-	return response
-}
-
 const prompt = `
 You are an AI assistant specialized in creating exceptional commit messages. Your goal is to analyze the provided details and generate a semantic commit message adhering to the following standards:
 
