@@ -57,11 +57,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Erro ao gerar mensagem de commit: %v", err)
 	}
-	// Exibe a mensagem de commit gerada
+
 	fmt.Println("Aqui está a mensagem de commit gerada:")
 	fmt.Println(commitMessage)
 
-	// Pergunta ao usuário se ele quer continuar com o commit
 	var response string
 	fmt.Print("Você deseja continuar com esse commit? (s/n): ")
 	fmt.Scanln(&response)
@@ -167,18 +166,11 @@ func commitChanges(commitMessage string) error {
 
 func createUserMessage(diff, branch, task string) string {
 	return fmt.Sprintf(`
-Você é um assistente especializado em escrever mensagens de commit perfeitas. Siga estas diretrizes:
- 
-1. Crie uma mensagem de commit clara e concisa. 
-2. Use o formato de commits semânticos, incluindo um tipo (como feat, fix, docs) e um emoji correspondente. 
-3. Mantenha a mensagem dentro de 72 caracteres na linha principal e inclua uma descrição mais detalhada no corpo, se necessário. 
-4. Inclua informações relevantes da tarefa, quando fornecidas. 
- 
-Aqui estão os detalhes: 
-- **Tarefa**: %s
-- **Branch atual**: %s 
-- **Alterações**: 
+### Provided Details:
+- **Task**: %s
+- **Branch**: %s
+- **Changes**:
 %s
 
-Baseado nisso, escreva a mensagem de commit.`, task, branch, diff)
+Based on this, generate a commit message.`, task, branch, diff)
 }
