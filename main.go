@@ -2,89 +2,34 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
-	"github.com/MatthewAraujo/commit_message/config"
 	"github.com/MatthewAraujo/commit_message/prompt"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
 )
 
-func main() {
-	taskFlag := flag.String("task", "", "Task description for the commit")
-	apiKeyFlag := flag.String("apikey", "", "API Key for OpenAI (can be configured via environment variable)")
+const (
+	apiKeyFilePathEnv      = ".open_ai_api_key.json"
+	minCommitMessageLength = 20
+)
 
-	flag.Parse()
-
-	if *taskFlag == "" {
-		fmt.Println("Error: The -task flag is required.")
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	if *apiKeyFlag == "" && config.Envs.OpenAi.API_KEY == "" {
-		fmt.Println("Error: The OpenAI API key was not provided. Use the -apikey flag or set the environment variable.")
-		os.Exit(1)
-	}
-
-	apiKey := *apiKeyFlag
-	if apiKey == "" {
-		apiKey = os.Getenv("OPENAI_API_KEY")
-	}
-
-	if isGitRepositoryClean() {
-		fmt.Println("Error: The repository has uncommitted changes. Please commit or discard the changes before continuing.")
-		os.Exit(1)
-	}
-
-	branch, err := getGitBranch()
+func checkError(err error, msg string) {
 	if err != nil {
-		log.Fatalf("Error getting the Git branch: %v", err)
+		log.Fatalf("%s: %v", msg, err)
 	}
-
-	diff, err := getGitDiff()
-	if err != nil {
-		log.Fatalf("Error getting the Git diff: %v", err)
-	}
-
-	openAIClient := openai.NewClient(option.WithAPIKey(apiKey))
-	commitMessage, err := generateCommitMessage(openAIClient, diff, branch, *taskFlag)
-	if err != nil {
-		log.Fatalf("Error generating commit message: %v", err)
-	}
-
-	fmt.Println("Here is the generated commit message:")
-	fmt.Println(commitMessage)
-
-	var response string
-	fmt.Print("Do you want to proceed with this commit? (y/n): ")
-	fmt.Scanln(&response)
-
-	if strings.ToLower(response) != "y" {
-		fmt.Println("Commit canceled.")
-		return
-	}
-
-	err = commitChanges(commitMessage)
-	if err != nil {
-		log.Fatalf("Error committing changes: %v", err)
-	}
-
-	fmt.Println("Commit successfully completed!")
 }
 
 func isGitRepositoryClean() bool {
 	status, err := shellCommand("git", "status", "--porcelain")
-	if err != nil {
-		log.Printf("Error checking Git status: %v", err)
-		return false
-	}
-
+	checkError(err, "Error checking Git status")
 	return status == ""
 }
 
@@ -105,6 +50,25 @@ func shellCommand(command ...string) (string, error) {
 	return string(output), nil
 }
 
+func normalizeMessage(line string) string {
+	line = strings.TrimSpace(line)
+	line = strings.TrimLeft(line, "0123456789.*- ")
+	line = strings.Trim(line, "`\"'")
+
+	line = strings.ReplaceAll(line, "\\n", "")
+	line = strings.ReplaceAll(line, ": `", ":")
+	line = strings.ReplaceAll(line, "`:", ":")
+	line = strings.ReplaceAll(line, "*", "")
+	line = strings.ReplaceAll(line, ". ", ".\n")
+	return line
+}
+
+func getOpenAIAPIKeyFilePath() string {
+	homeDir, err := os.UserHomeDir()
+	checkError(err, "Error getting user directory")
+	return filepath.Join(homeDir, apiKeyFilePathEnv)
+}
+
 func generateCommitMessage(client *openai.Client, diff, branch, task string) (string, error) {
 	prompt := prompt.GetPrompt()
 	userMessage := createUserMessage(diff, branch, task)
@@ -122,36 +86,17 @@ func generateCommitMessage(client *openai.Client, diff, branch, task string) (st
 	return extractCommitMessage(chatCompletion.Choices[0].Message.Content), nil
 }
 
-func normalizeMessage(line string) string {
-	line = strings.TrimSpace(line)
-
-	line = strings.TrimLeft(line, "0123456789.*- ")
-
-	line = strings.Trim(line, "`\"'")
-
-	line = strings.ReplaceAll(line, "\\n", "")
-
-	line = strings.ReplaceAll(line, ": `", ":")
-	line = strings.ReplaceAll(line, "`:", ":")
-
-	line = strings.ReplaceAll(line, "*", "")
-
-	line = strings.ReplaceAll(line, ". ", ".\n")
-
-	return line
-}
-
 func extractCommitMessage(response string) string {
 	lines := strings.Split(response, "\n")
 	var commitMessage strings.Builder
-
 	ignoredFirstShortLine := false
 
 	for _, line := range lines {
 		normalizedLine := normalizeMessage(line)
 
 		if normalizedLine != "" {
-			if len(normalizedLine) < 20 && !ignoredFirstShortLine {
+			// Ignore the first short line
+			if len(normalizedLine) < minCommitMessageLength && !ignoredFirstShortLine {
 				ignoredFirstShortLine = true
 				continue
 			}
@@ -181,4 +126,102 @@ func createUserMessage(diff, branch, task string) string {
 %s
 
 Based on this, generate a commit message.`, task, branch, diff)
+}
+
+func getAPIKey() (string, error) {
+	filePath := getOpenAIAPIKeyFilePath()
+	file, err := os.Open(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", fmt.Errorf("API key file not found")
+		}
+		return "", fmt.Errorf("error opening API key file: %v", err)
+	}
+	defer file.Close()
+
+	var key map[string]string
+	if err := json.NewDecoder(file).Decode(&key); err != nil {
+		return "", fmt.Errorf("error reading API key: %v", err)
+	}
+
+	apiKey, exists := key["ApiKey"]
+	if !exists {
+		return "", fmt.Errorf("API key not found in file")
+	}
+
+	return apiKey, nil
+}
+
+func setupAPIKey(args []string) error {
+	if len(args) < 2 {
+		return fmt.Errorf("API key argument missing")
+	}
+
+	filePath := getOpenAIAPIKeyFilePath()
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("error saving API key: %v", err)
+	}
+	defer file.Close()
+
+	key := map[string]string{"ApiKey": args[2]}
+	encoder := json.NewEncoder(file)
+	if err := encoder.Encode(key); err != nil {
+		return fmt.Errorf("error writing API key: %v", err)
+	}
+
+	fmt.Println("API key saved successfully.")
+	return nil
+}
+
+func main() {
+	taskFlag := flag.String("task", "", "Task description for the commit")
+	setAPIKeyFlag := flag.Bool("set_api_key", false, "Set the OpenAI API key")
+	flag.Parse()
+
+	if *setAPIKeyFlag {
+		if err := setupAPIKey(os.Args); err != nil {
+			fmt.Println("Error: ", err)
+			os.Exit(1)
+		}
+		fmt.Println("API key setup complete.")
+		return
+	}
+
+	apiKey, err := getAPIKey()
+	checkError(err, "Error retrieving the API key")
+
+	if isGitRepositoryClean() {
+		fmt.Println("Error: The repository has uncommitted changes. Please commit or discard the changes before continuing.")
+		os.Exit(1)
+	}
+
+	branch, err := getGitBranch()
+	checkError(err, "Error getting Git branch")
+
+	diff, err := getGitDiff()
+	checkError(err, "Error getting Git diff")
+
+	openAIClient := openai.NewClient(option.WithAPIKey(apiKey))
+	commitMessage, err := generateCommitMessage(openAIClient, diff, branch, *taskFlag)
+	checkError(err, "Error generating commit message")
+
+	fmt.Println("Here is the generated commit message:")
+	fmt.Println(commitMessage)
+
+	var response string
+	fmt.Print("Do you want to proceed with this commit? (y/n): ")
+	fmt.Scanln(&response)
+
+	if strings.ToLower(response) != "y" {
+		fmt.Println("Commit canceled.")
+		return
+	}
+
+	if err := commitChanges(commitMessage); err != nil {
+		fmt.Printf("Error committing changes: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Commit successfully completed!")
 }
