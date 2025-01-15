@@ -17,16 +17,57 @@ This project uses OpenAI's GPT-4 model to generate commit messages based on the 
 
 ## Installation
 
-1. Clone this repository to your local machine:
+You can install the tool in two different ways: using Go or downloading the executable.
 
+### Option 1: Using Go
+
+1. Run the following command:
    ```bash
-   git clone https://github.com/MatthewAraujo/git-commit-message-generator.git
-   cd git-commit-message-generator
+   go install github.com/MatthewAraujo/commit_message@latest
+   ```
+2. You are now ready to use the tool.
+
+### Option 2: Downloading the Executable
+
+1. Download the binary for your operating system (Windows, macOS, or Linux) from the [releases page](https://github.com/MatthewAraujo/commit_message/releases).
+2. Follow the steps below to set up and execute the tool for your operating system:
+
+#### For Linux
+
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   git clone https://github.com/MatthewAraujo/commit_message.git && \
+   cd commit_message
+   ```
+2. Make the setup script executable and run it:
+   ```bash
+   chmod +x setup-linux.sh
+   ./setup-linux.sh
    ```
 
-2. Install the necessary dependencies:
+#### For Windows
+
+1. Clone the repository and navigate to the project directory:
    ```bash
-   go mod tidy
+   git clone https://github.com/MatthewAraujo/commit_message.git && \
+   cd commit_message
+   ```
+2. Run the setup script:
+   ```cmd
+   setup-windows.cmd
+   ```
+
+#### For macOS
+
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   git clone https://github.com/MatthewAraujo/commit_message.git && \
+   cd commit_message
+   ```
+2. Make the setup script executable and run it:
+   ```bash
+   chmod +x setup-macos.sh
+   ./setup-macos.sh
    ```
 
 ## Setup API Key
@@ -34,11 +75,9 @@ This project uses OpenAI's GPT-4 model to generate commit messages based on the 
 Before using the tool, you need to set up your OpenAI API key:
 
 1. Run the following command to set the API key:
-
    ```bash
    go run main.go --set_api_key --api_key YOUR_OPENAI_API_KEY
    ```
-
 2. The API key will be stored in a `.open_ai_api_key.json` file in your home directory. If you don't have an OpenAI API key, sign up at [OpenAI](https://platform.openai.com/signup).
 
 ## Usage
@@ -73,11 +112,7 @@ Do you want to proceed with this commit? (y/n): y
 🎉 Commit successfully completed!
 ```
 
-```
-
 ## Error Handling
 
 - If there are uncommitted changes, the tool will notify you and exit without making any commits.
 - If the API key is missing or invalid, an error message will be displayed.
-
-```
