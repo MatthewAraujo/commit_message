@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -23,7 +22,12 @@ const (
 
 func checkError(err error, msg string) {
 	if err != nil {
-		log.Fatalf("%s: %v", msg, err)
+		red := "\033[31m"
+		bold := "\033[1m"
+		reset := "\033[0m"
+		fmt.Fprintf(os.Stderr, "\n%s%s[ERROR]%s %s\n", bold, red, reset, msg)
+		fmt.Fprintf(os.Stderr, "%sDetails:%s %v\n\n", bold, reset, err)
+		os.Exit(1)
 	}
 }
 

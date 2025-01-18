@@ -3,11 +3,11 @@
 # Variables
 BINARY_NAME="commit_message"
 CUSTOM_BIN_DIR="$HOME/bin"
+BINARY_URL="https://github.com/MatthewAraujo/commit_message/releases/download/binary/commit_message-linux-amd64"
 
-# Check if the binary exists
-if [[ ! -f "$BINARY_NAME" ]]; then
-    echo "Error: Binary '$BINARY_NAME' not found in the current directory."
-    echo "Please place the binary in this directory and run the script again."
+# Ensure curl is available
+if ! command -v curl &>/dev/null; then
+    echo "Error: curl is required but not installed. Please install curl and try again."
     exit 1
 fi
 
@@ -17,9 +17,13 @@ if [[ ! -d "$CUSTOM_BIN_DIR" ]]; then
     mkdir -p "$CUSTOM_BIN_DIR"
 fi
 
-# Copy the binary to the custom directory
-echo "Copying $BINARY_NAME to $CUSTOM_BIN_DIR"
-cp "$BINARY_NAME" "$CUSTOM_BIN_DIR/"
+# Download the binary file
+echo "Downloading $BINARY_NAME from $BINARY_URL"
+curl -L -o "$CUSTOM_BIN_DIR/$BINARY_NAME" "$BINARY_URL"
+if [[ $? -ne 0 ]]; then
+    echo "Error: Failed to download the binary from $BINARY_URL"
+    exit 1
+fi
 
 # Ensure the binary is executable
 echo "Making $CUSTOM_BIN_DIR/$BINARY_NAME executable"

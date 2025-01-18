@@ -47,40 +47,17 @@ source ~/.zshrc
 
 #### For Linux
 
-1. Clone the repository and navigate to the project directory:
+1. Run this command and will download and install:
    ```bash
-   git clone https://github.com/MatthewAraujo/commit_message.git && \
-   cd commit_message
-   ```
-2. Make the setup script executable and run it:
-   ```bash
-   chmod +x setup-linux.sh
-   ./setup-linux.sh
+   sh -c "$(curl -fsSL https://raw.githubusercontent.com/MatthewAraujo/commit_message/main/setup-linux.sh)"             
    ```
 
 #### For Windows
 
-1. Clone the repository and navigate to the project directory:
+1. Run this command and will download and install:
    ```bash
-   git clone https://github.com/MatthewAraujo/commit_message.git && \
-   cd commit_message
-   ```
-2. Run the setup script:
-   ```cmd
-   setup-windows.cmd
-   ```
+   powershell -Command "Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/MatthewAraujo/commit_message/main/setup-windows.cmd'))"
 
-#### For macOS
-
-1. Clone the repository and navigate to the project directory:
-   ```bash
-   git clone https://github.com/MatthewAraujo/commit_message.git && \
-   cd commit_message
-   ```
-2. Make the setup script executable and run it:
-   ```bash
-   chmod +x setup-macos.sh
-   ./setup-macos.sh
    ```
 
 ## Setup API Key
