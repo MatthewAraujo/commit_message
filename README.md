@@ -67,7 +67,7 @@ Before using the tool, you need to set up your OpenAI API key:
 
 1. Run the following command to set the API key:
    ```bash
-   go run main.go --set_api_key --api_key YOUR_OPENAI_API_KEY
+   commit_message -set_api_key YOUR_OPENAI_API_KEY
    ```
 2. The API key will be stored in a `.open_ai_api_key.json` file in your home directory. If you don't have an OpenAI API key, sign up at [OpenAI](https://platform.openai.com/signup).
 
@@ -75,7 +75,7 @@ Before using the tool, you need to set up your OpenAI API key:
 
 1. To generate a commit message, run the following command:
    ```bash
-   go run main.go --task "TASK_DESCRIPTION"
+   commit_message --task "TASK_DESCRIPTION"
    ```
    - Replace `TASK_DESCRIPTION` with a short description of the task you're working on (optional).
 2. The program will:
@@ -89,7 +89,7 @@ Before using the tool, you need to set up your OpenAI API key:
 ## Example
 
 ```bash
-$ go run main.go --task "Fix bug in user authentication"
+$ commit_message --task "Fix bug in user authentication"
 🔍 Retrieving current Git branch and changes...
 🧠 Generating commit message based on the changes...
 💬 Here is the generated commit message:
