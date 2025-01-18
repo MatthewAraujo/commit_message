@@ -25,6 +25,19 @@ You can install the tool in two different ways: using Go or downloading the exec
    ```bash
    go install github.com/MatthewAraujo/commit_message@latest
    ```
+This installs a go binary that will automatically bind to your $GOPATH
+
+> if you’re using Zsh, you’ll need to add it manually to `~/.zshrc`.
+```bash
+GOPATH=$HOME/go  PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
+```
+
+don't forget to update
+
+```bash
+source ~/.zshrc
+```
+
 2. You are now ready to use the tool.
 
 ### Option 2: Downloading the Executable
