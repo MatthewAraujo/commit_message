@@ -5,19 +5,16 @@ BINARY_NAME="commit_message"
 CUSTOM_BIN_DIR="$HOME/bin"
 BINARY_URL="https://github.com/MatthewAraujo/commit_message/releases/download/binary/commit_message-linux-amd64"
 
-# Ensure curl is available
 if ! command -v curl &>/dev/null; then
     echo "Error: curl is required but not installed. Please install curl and try again."
     exit 1
 fi
 
-# Create the custom directory if it doesn't exist
 if [[ ! -d "$CUSTOM_BIN_DIR" ]]; then
     echo "Creating directory: $CUSTOM_BIN_DIR"
     mkdir -p "$CUSTOM_BIN_DIR"
 fi
 
-# Download the binary file
 echo "Downloading $BINARY_NAME from $BINARY_URL"
 curl -L -o "$CUSTOM_BIN_DIR/$BINARY_NAME" "$BINARY_URL"
 if [[ $? -ne 0 ]]; then
@@ -25,11 +22,9 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-# Ensure the binary is executable
 echo "Making $CUSTOM_BIN_DIR/$BINARY_NAME executable"
 chmod +x "$CUSTOM_BIN_DIR/$BINARY_NAME"
 
-# Display instructions for the user
 cat <<EOF
 
 Installation complete!
