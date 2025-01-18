@@ -2,7 +2,7 @@
 
 This project uses OpenAI's GPT-4 model to generate commit messages based on the changes in a Git repository. It analyzes the difference between your current Git changes and generates a commit message that you can review before committing your changes.
 
-https://github.com/user-attachments/assets/b6bde167-d480-4edf-a8c1-c5bd637d4d08
+https://github.com/user-attachments/assets/58918205-62b8-418e-bf70-3a263e7db01b
 ## Features
 
 - **Automatic Commit Message Generation**: Generate a commit message based on the changes in your Git repository.
